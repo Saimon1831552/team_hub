@@ -23,6 +23,10 @@ export async function createAction(req, res) {
       },
     })
 
+    // Real-time emit
+    const io = req.app.get('io')
+    io.to(`workspace:${workspaceId}`).emit('action:new', action)
+
     res.status(201).json({ action })
   } catch (err) {
     console.error(err)
@@ -58,7 +62,7 @@ export async function getActions(req, res) {
 
 export async function updateAction(req, res) {
   try {
-    const { actionId } = req.params
+    const { actionId, workspaceId } = req.params
     const { title, status, priority, dueDate, assigneeId, goalId } = req.body
 
     const action = await prisma.actionItem.update({
@@ -77,6 +81,10 @@ export async function updateAction(req, res) {
       },
     })
 
+    // Real-time emit
+    const io = req.app.get('io')
+    io.to(`workspace:${workspaceId}`).emit('action:updated', action)
+
     res.json({ action })
   } catch (err) {
     res.status(500).json({ message: 'Server error' })
@@ -85,8 +93,13 @@ export async function updateAction(req, res) {
 
 export async function deleteAction(req, res) {
   try {
-    const { actionId } = req.params
+    const { actionId, workspaceId } = req.params
     await prisma.actionItem.delete({ where: { id: actionId } })
+
+    // Real-time emit
+    const io = req.app.get('io')
+    io.to(`workspace:${workspaceId}`).emit('action:deleted', { id: actionId })
+
     res.json({ message: 'Action deleted' })
   } catch (err) {
     res.status(500).json({ message: 'Server error' })

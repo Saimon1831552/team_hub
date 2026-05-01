@@ -8,10 +8,10 @@ import dotenv from 'dotenv'
 import { initSocket } from './socket/socket.js'
 import authRoutes from './routes/auth.routes.js'
 import workspaceRoutes from './routes/workspace.routes.js'
-import goalRoutes   from './routes/goal.routes.js'
+import goalRoutes from './routes/goal.routes.js'
 import actionRoutes from './routes/action.routes.js'
 import announcementRoutes from './routes/announcement.routes.js'
-import analyticsRoutes    from './routes/analytics.routes.js'
+import analyticsRoutes from './routes/analytics.routes.js'
 
 dotenv.config()
 
@@ -33,13 +33,15 @@ app.use(cors({
 app.use(express.json())
 app.use(cookieParser())
 
+app.set('io', io)
+
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }))
 app.use('/api/auth', authRoutes)
 app.use('/api/workspaces', workspaceRoutes)
-app.use('/api/workspaces/:workspaceId/goals',   goalRoutes)
+app.use('/api/workspaces/:workspaceId/goals', goalRoutes)
 app.use('/api/workspaces/:workspaceId/actions', actionRoutes)
 app.use('/api/workspaces/:workspaceId/announcements', announcementRoutes)
-app.use('/api/workspaces/:workspaceId/analytics',     analyticsRoutes)
+app.use('/api/workspaces/:workspaceId/analytics', analyticsRoutes)
 
 initSocket(io)
 

@@ -17,6 +17,10 @@ export async function createAnnouncement(req, res) {
       },
     })
 
+    // Real-time emit
+    const io = req.app.get('io')
+    io.to(`workspace:${workspaceId}`).emit('announcement:new', announcement)
+
     res.status(201).json({ announcement })
   } catch (err) {
     console.error(err)
@@ -52,13 +56,17 @@ export async function getAnnouncements(req, res) {
 
 export async function updateAnnouncement(req, res) {
   try {
-    const { announcementId } = req.params
+    const { announcementId, workspaceId } = req.params
     const { content } = req.body
 
     const announcement = await prisma.announcement.update({
       where: { id: announcementId },
       data: { content },
     })
+
+    // Real-time emit
+    const io = req.app.get('io')
+    io.to(`workspace:${workspaceId}`).emit('announcement:updated', announcement)
 
     res.json({ announcement })
   } catch (err) {
@@ -68,8 +76,13 @@ export async function updateAnnouncement(req, res) {
 
 export async function deleteAnnouncement(req, res) {
   try {
-    const { announcementId } = req.params
+    const { announcementId, workspaceId } = req.params
     await prisma.announcement.delete({ where: { id: announcementId } })
+
+    // Real-time emit
+    const io = req.app.get('io')
+    io.to(`workspace:${workspaceId}`).emit('announcement:deleted', { id: announcementId })
+
     res.json({ message: 'Announcement deleted' })
   } catch (err) {
     res.status(500).json({ message: 'Server error' })
@@ -78,7 +91,7 @@ export async function deleteAnnouncement(req, res) {
 
 export async function pinAnnouncement(req, res) {
   try {
-    const { announcementId } = req.params
+    const { announcementId, workspaceId } = req.params
 
     const current = await prisma.announcement.findUnique({
       where: { id: announcementId },
@@ -89,6 +102,10 @@ export async function pinAnnouncement(req, res) {
       data: { pinned: !current.pinned },
     })
 
+    // Real-time emit
+    const io = req.app.get('io')
+    io.to(`workspace:${workspaceId}`).emit('announcement:updated', announcement)
+
     res.json({ announcement })
   } catch (err) {
     res.status(500).json({ message: 'Server error' })
@@ -97,12 +114,11 @@ export async function pinAnnouncement(req, res) {
 
 export async function addReaction(req, res) {
   try {
-    const { announcementId } = req.params
+    const { announcementId, workspaceId } = req.params
     const { emoji } = req.body
 
     if (!emoji) return res.status(400).json({ message: 'Emoji is required' })
 
-    // Toggle — remove if already reacted with same emoji
     const existing = await prisma.reaction.findUnique({
       where: {
         userId_announcementId_emoji: {
@@ -115,12 +131,19 @@ export async function addReaction(req, res) {
 
     if (existing) {
       await prisma.reaction.delete({ where: { id: existing.id } })
+
+      const io = req.app.get('io')
+      io.to(`workspace:${workspaceId}`).emit('reaction:removed', { announcementId, emoji, userId: req.userId })
+
       return res.json({ message: 'Reaction removed' })
     }
 
     const reaction = await prisma.reaction.create({
       data: { emoji, userId: req.userId, announcementId },
     })
+
+    const io = req.app.get('io')
+    io.to(`workspace:${workspaceId}`).emit('reaction:added', { announcementId, reaction })
 
     res.status(201).json({ reaction })
   } catch (err) {
@@ -130,7 +153,7 @@ export async function addReaction(req, res) {
 
 export async function addComment(req, res) {
   try {
-    const { announcementId } = req.params
+    const { announcementId, workspaceId } = req.params
     const { content } = req.body
 
     if (!content) return res.status(400).json({ message: 'Content is required' })
@@ -141,6 +164,9 @@ export async function addComment(req, res) {
         user: { select: { id: true, name: true, avatar: true } },
       },
     })
+
+    const io = req.app.get('io')
+    io.to(`workspace:${workspaceId}`).emit('comment:new', { announcementId, comment })
 
     res.status(201).json({ comment })
   } catch (err) {

@@ -7,7 +7,6 @@ export async function createGoal(req, res) {
 
     if (!title) return res.status(400).json({ message: 'Title is required' })
 
-    // check membership
     const member = await prisma.workspaceMember.findUnique({
       where: { userId_workspaceId: { userId: req.userId, workspaceId } },
     })
@@ -37,6 +36,10 @@ export async function createGoal(req, res) {
         workspaceId,
       },
     })
+
+    // Real-time emit
+    const io = req.app.get('io')
+    io.to(`workspace:${workspaceId}`).emit('goal:new', goal)
 
     res.status(201).json({ goal })
   } catch (err) {
@@ -137,6 +140,10 @@ export async function updateGoal(req, res) {
       },
     })
 
+    // Real-time emit
+    const io = req.app.get('io')
+    io.to(`workspace:${workspaceId}`).emit('goal:updated', goal)
+
     res.json({ goal })
   } catch (err) {
     res.status(500).json({ message: 'Server error' })
@@ -145,8 +152,13 @@ export async function updateGoal(req, res) {
 
 export async function deleteGoal(req, res) {
   try {
-    const { goalId } = req.params
+    const { goalId, workspaceId } = req.params
     await prisma.goal.delete({ where: { id: goalId } })
+
+    // Real-time emit
+    const io = req.app.get('io')
+    io.to(`workspace:${workspaceId}`).emit('goal:deleted', { id: goalId })
+
     res.json({ message: 'Goal deleted' })
   } catch (err) {
     res.status(500).json({ message: 'Server error' })
