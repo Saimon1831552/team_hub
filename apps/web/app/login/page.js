@@ -19,7 +19,7 @@ export default function LoginPage() {
       const res = await api.post('/api/auth/login', form)
       setUser(res.data.user)
       toast.success('Welcome back!')
-      router.push('/dashboard')
+      window.location.href = '/dashboard'
     } catch (err) {
       toast.error(err.response?.data?.message || 'Login failed')
     } finally {

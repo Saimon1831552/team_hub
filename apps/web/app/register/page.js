@@ -19,7 +19,7 @@ export default function RegisterPage() {
       const res = await api.post('/api/auth/register', form)
       setUser(res.data.user)
       toast.success('Account created!')
-      router.push('/dashboard')
+      window.location.href = '/dashboard'
     } catch (err) {
       toast.error(err.response?.data?.message || 'Registration failed')
     } finally {
