@@ -13,19 +13,22 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e) {
-    e.preventDefault()
-    setLoading(true)
-    try {
-      const res = await api.post('/api/auth/register', form)
-      setUser(res.data.user)
-      toast.success('Account created!')
-      window.location.href = '/dashboard'
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Registration failed')
-    } finally {
-      setLoading(false)
+  e.preventDefault()
+  setLoading(true)
+  try {
+    const res = await api.post('/api/auth/register', form)
+    setUser(res.data.user)
+    if (res.data.accessToken) {
+      localStorage.setItem('accessToken', res.data.accessToken)
     }
+    toast.success('Account created!')
+    window.location.href = '/dashboard'
+  } catch (err) {
+    toast.error(err.response?.data?.message || 'Registration failed')
+  } finally {
+    setLoading(false)
   }
+}
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50">

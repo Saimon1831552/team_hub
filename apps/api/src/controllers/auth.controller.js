@@ -4,10 +4,15 @@ import prisma from '../lib/prisma.js'
 
 const ACCESS_EXPIRY  = '15m'
 const REFRESH_EXPIRY = '7d'
-const COOKIE_OPTS = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'none',
+
+function getCookieOpts(maxAge) {
+  return {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none',
+    path: '/',
+    maxAge,
+  }
 }
 
 function signTokens(userId) {
@@ -45,11 +50,12 @@ export async function register(req, res) {
     const { accessToken, refreshToken } = signTokens(user.id)
 
     res
-      .cookie('accessToken',  accessToken,  { ...COOKIE_OPTS, maxAge: 15 * 60 * 1000 })
-      .cookie('refreshToken', refreshToken, { ...COOKIE_OPTS, maxAge: 7 * 24 * 60 * 60 * 1000 })
+      .cookie('accessToken',  accessToken,  getCookieOpts(15 * 60 * 1000))
+      .cookie('refreshToken', refreshToken, getCookieOpts(7 * 24 * 60 * 60 * 1000))
       .status(201)
       .json({
         user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar },
+        accessToken,
       })
   } catch (err) {
     console.error(err)
@@ -78,10 +84,11 @@ export async function login(req, res) {
     const { accessToken, refreshToken } = signTokens(user.id)
 
     res
-      .cookie('accessToken',  accessToken,  { ...COOKIE_OPTS, maxAge: 15 * 60 * 1000 })
-      .cookie('refreshToken', refreshToken, { ...COOKIE_OPTS, maxAge: 7 * 24 * 60 * 60 * 1000 })
+      .cookie('accessToken',  accessToken,  getCookieOpts(15 * 60 * 1000))
+      .cookie('refreshToken', refreshToken, getCookieOpts(7 * 24 * 60 * 60 * 1000))
       .json({
         user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar },
+        accessToken,
       })
   } catch (err) {
     console.error(err)
@@ -91,8 +98,8 @@ export async function login(req, res) {
 
 export async function logout(req, res) {
   res
-    .clearCookie('accessToken')
-    .clearCookie('refreshToken')
+    .clearCookie('accessToken',  { path: '/', sameSite: 'none', secure: true })
+    .clearCookie('refreshToken', { path: '/', sameSite: 'none', secure: true })
     .json({ message: 'Logged out' })
 }
 
@@ -107,9 +114,9 @@ export async function refresh(req, res) {
     const { accessToken, refreshToken } = signTokens(decoded.userId)
 
     res
-      .cookie('accessToken',  accessToken,  { ...COOKIE_OPTS, maxAge: 15 * 60 * 1000 })
-      .cookie('refreshToken', refreshToken, { ...COOKIE_OPTS, maxAge: 7 * 24 * 60 * 60 * 1000 })
-      .json({ message: 'Tokens refreshed' })
+      .cookie('accessToken',  accessToken,  getCookieOpts(15 * 60 * 1000))
+      .cookie('refreshToken', refreshToken, getCookieOpts(7 * 24 * 60 * 60 * 1000))
+      .json({ message: 'Tokens refreshed', accessToken })
   } catch (err) {
     res.status(401).json({ message: 'Invalid refresh token' })
   }
