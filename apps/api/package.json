@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
+    "build": "npx prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
     "db:seed": "node prisma/seed.js",
@@ -28,6 +29,6 @@
     "prisma": "^5.22.0"
   },
   "prisma": {
-  "seed": "node prisma/seed.js"
-}
+    "seed": "node prisma/seed.js"
+  }
 }
