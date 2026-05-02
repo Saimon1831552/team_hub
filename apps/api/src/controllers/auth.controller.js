@@ -7,7 +7,7 @@ const REFRESH_EXPIRY = '7d'
 const COOKIE_OPTS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict',
+  sameSite: 'none',
 }
 
 function signTokens(userId) {

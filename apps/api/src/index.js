@@ -26,11 +26,17 @@ const io = new Server(httpServer, {
   },
 })
 
-app.use(helmet())
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
-  credentials: true,
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
 }))
+
+app.use(cors({
+  origin: process.env.CLIENT_URL,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}))
+
 app.use(express.json())
 app.use(cookieParser())
 
