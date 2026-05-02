@@ -4,7 +4,12 @@ export const useActionStore = create((set) => ({
   actions: [],
   setActions: (actions) => set({ actions }),
   addAction: (action) =>
-    set((state) => ({ actions: [action, ...state.actions] })),
+    set((state) => {
+      // Prevent duplicate
+      const exists = state.actions.some((a) => a.id === action.id)
+      if (exists) return state
+      return { actions: [action, ...state.actions] }
+    }),
   updateAction: (id, data) =>
     set((state) => ({
       actions: state.actions.map((a) =>
