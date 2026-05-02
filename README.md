@@ -4,15 +4,11 @@ A full-stack collaborative workspace application where teams can manage shared g
 
 ---
 
-## 🚀 Live Demo
-
-- **Web App:** https://kind-caring-production-4205.up.railway.app
-- **API:** https://teamhub-production-3267.up.railway.app/api/health
-- **Demo Account:**
-  - Email: `demo@teamhub.com`
-  - Password: `demo1234`
-
----
+## Live Demo
+- Web App: https://kind-caring-production-4205.up.railway.app
+- API: https://teamhub-production-3267.up.railway.app
+- API Docs: https://teamhub-production-3267.up.railway.app/api/docs
+- Demo: demo@teamhub.com / demo1234
 
 ## 🛠 Tech Stack
 
