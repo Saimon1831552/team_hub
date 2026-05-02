@@ -30,6 +30,15 @@ export default function LoginPage() {
   }
 }
 
+async function handleLogout() {
+  try {
+    await api.post('/api/auth/logout')
+  } catch {}
+  localStorage.removeItem('accessToken')
+  clearUser()
+  window.location.href = '/login'
+}
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
