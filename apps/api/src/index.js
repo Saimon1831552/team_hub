@@ -13,6 +13,8 @@ import actionRoutes from './routes/action.routes.js'
 import announcementRoutes from './routes/announcement.routes.js'
 import analyticsRoutes from './routes/analytics.routes.js'
 import uploadRoutes from './routes/upload.routes.js'
+import swaggerUi from 'swagger-ui-express'
+import { swaggerSpec } from './swagger.js'
 
 dotenv.config()
 
@@ -43,6 +45,10 @@ app.use(cookieParser())
 app.set('io', io)
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }))
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Team Hub API Docs',
+}))
 app.use('/api/auth', authRoutes)
 app.use('/api/workspaces', workspaceRoutes)
 app.use('/api/workspaces/:workspaceId/goals', goalRoutes)
