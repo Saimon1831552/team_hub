@@ -45,6 +45,7 @@ useEffect(() => {
     { href: '/dashboard/actions', label: 'Actions', icon: '✅' },
     { href: '/dashboard/announcements', label: 'Announcements', icon: '📢' },
     { href: '/dashboard/members', label: 'Members', icon: '👥' },
+    { href: '/dashboard/profile', label: 'Profile', icon: '👤' },
   ]
 
   return (

@@ -1,11 +1,17 @@
-'use client'
-import { useEffect, useState } from 'react'
-import { useWorkspaceStore } from '@/store/workspaceStore'
-import api from '@/lib/api'
+"use client";
+import { useEffect, useState } from "react";
+import { useWorkspaceStore } from "@/store/workspaceStore";
+import api from "@/lib/api";
+import toast from 'react-hot-toast'
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer
-} from 'recharts'
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 function StatCard({ label, value, color, icon }) {
   return (
@@ -18,37 +24,60 @@ function StatCard({ label, value, color, icon }) {
         <span className="text-3xl">{icon}</span>
       </div>
     </div>
-  )
+  );
 }
 
 export default function DashboardPage() {
-  const current = useWorkspaceStore((s) => s.current)
-  const [stats, setStats] = useState(null)
-  const [chartData, setChartData] = useState([])
-  const [loading, setLoading] = useState(true)
+  const current = useWorkspaceStore((s) => s.current);
+  const [stats, setStats] = useState(null);
+  const [chartData, setChartData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!current) return
+    if (!current) return;
     async function load() {
       try {
-        const res = await api.get(`/api/workspaces/${current.id}/analytics/stats`)
-        setStats(res.data.stats)
-        setChartData(res.data.chartData)
+        const res = await api.get(
+          `/api/workspaces/${current.id}/analytics/stats`,
+        );
+        setStats(res.data.stats);
+        setChartData(res.data.chartData);
       } catch (err) {
-        console.error(err)
+        console.error(err);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
-    load()
-  }, [current])
+    load();
+  }, [current]);
+
+  async function handleExport() {
+  try {
+    const response = await api.get(
+      `/api/workspaces/${current.id}/analytics/export`,
+      { responseType: 'blob' }
+    )
+
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `workspace-${current.name}-export.csv`)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(url)
+    toast.success('CSV exported!')
+  } catch (err) {
+    toast.error('Export failed')
+  }
+}
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
       </div>
-    )
+    );
   }
 
   return (
@@ -60,18 +89,63 @@ export default function DashboardPage() {
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard label="Total Goals"        value={stats?.totalGoals}        color="text-indigo-600" icon="🎯" />
-        <StatCard label="Active Goals"       value={stats?.activeGoals}       color="text-blue-600"   icon="🔵" />
-        <StatCard label="Done This Week"     value={stats?.completedThisWeek} color="text-green-600"  icon="✅" />
-        <StatCard label="Overdue Actions"    value={stats?.overdueActions}    color="text-red-600"    icon="⚠️" />
-        <StatCard label="Total Actions"      value={stats?.totalActions}      color="text-purple-600" icon="📋" />
-        <StatCard label="Completed Goals"    value={stats?.completedGoals}    color="text-green-600"  icon="🏆" />
-        <StatCard label="Team Members"       value={stats?.totalMembers}      color="text-orange-600" icon="👥" />
+        <StatCard
+          label="Total Goals"
+          value={stats?.totalGoals}
+          color="text-indigo-600"
+          icon="🎯"
+        />
+        <StatCard
+          label="Active Goals"
+          value={stats?.activeGoals}
+          color="text-blue-600"
+          icon="🔵"
+        />
+        <StatCard
+          label="Done This Week"
+          value={stats?.completedThisWeek}
+          color="text-green-600"
+          icon="✅"
+        />
+        <StatCard
+          label="Overdue Actions"
+          value={stats?.overdueActions}
+          color="text-red-600"
+          icon="⚠️"
+        />
+        <StatCard
+          label="Total Actions"
+          value={stats?.totalActions}
+          color="text-purple-600"
+          icon="📋"
+        />
+        <StatCard
+          label="Completed Goals"
+          value={stats?.completedGoals}
+          color="text-green-600"
+          icon="🏆"
+        />
+        <StatCard
+          label="Team Members"
+          value={stats?.totalMembers}
+          color="text-orange-600"
+          icon="👥"
+        />
       </div>
 
-      {/* Chart */}
+      {/* Chart + Export */}
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-        <h2 className="text-lg font-semibold mb-4">Goal Completions — Last 6 Months</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">
+            Goal Completions — Last 6 Months
+          </h2>
+          <button
+            onClick={handleExport}
+            className="text-sm bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2"
+          >
+            ⬇ Export CSV
+          </button>
+        </div>
         <ResponsiveContainer width="100%" height={250}>
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -82,6 +156,8 @@ export default function DashboardPage() {
           </BarChart>
         </ResponsiveContainer>
       </div>
+
+     
     </div>
-  )
+  );
 }

@@ -12,6 +12,7 @@ import goalRoutes from './routes/goal.routes.js'
 import actionRoutes from './routes/action.routes.js'
 import announcementRoutes from './routes/announcement.routes.js'
 import analyticsRoutes from './routes/analytics.routes.js'
+import uploadRoutes from './routes/upload.routes.js'
 
 dotenv.config()
 
@@ -42,6 +43,7 @@ app.use('/api/workspaces/:workspaceId/goals', goalRoutes)
 app.use('/api/workspaces/:workspaceId/actions', actionRoutes)
 app.use('/api/workspaces/:workspaceId/announcements', announcementRoutes)
 app.use('/api/workspaces/:workspaceId/analytics', analyticsRoutes)
+app.use('/api/upload', uploadRoutes)
 
 initSocket(io)
 
