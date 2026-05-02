@@ -47,3 +47,4 @@
  *       200:
  *         description: List of workspaces
  */
+export default router
